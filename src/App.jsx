@@ -6,6 +6,7 @@ import BerandaPage from "./features/profil/pages/BerandaPage";
 import BeritaPage from "./features/profil/pages/BeritaPage";
 import PortofolioPage from "./features/profil/pages/PortofolioPage";
 import ProfilPage from "./features/profil/pages/ProfilPage";
+import AdminPelanggaranPage from './features/admin/pages/AdminPelanggaranPage'; // pastikan ini sudah dibuat
 
 // Admin pages (baru)
 import AdminDashboardPage from "./features/admin/pages/AdminDashboardPage";
@@ -32,6 +33,7 @@ function App() {
         <Route path="/admin/fasilitas" element={<AdminFasilitasPage />} />
         <Route path="/admin/prestasi" element={<AdminPrestasiPage />} />
         <Route path="/admin/mitra" element={<AdminMitraPage />} />
+        <Route path="/admin/pelanggaran" element={<AdminPelanggaranPage />} />
       </Routes>
     </BrowserRouter>
   );
