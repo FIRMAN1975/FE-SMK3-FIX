@@ -9,6 +9,7 @@ import {
   mitraKerjasamaReducer,
   profilLoadingReducer,
 } from "./features/profil/states/reducer";
+import { portofolioReducer } from "./features/portofolio/states/reducer";
 
 const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ const store = configureStore({
     programKeahlian: programKeahlianReducer,
     mitraKerjasama: mitraKerjasamaReducer,
     profilLoading: profilLoadingReducer,
+    portofolio: portofolioReducer,
   },
 });
 

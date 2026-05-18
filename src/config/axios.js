@@ -20,8 +20,10 @@ apiGateway.interceptors.request.use(
       } catch (error) {
         console.error("Gagal memperbarui token, sesi mungkin habis.", error);
         // Jika refresh gagal (sesi benar-benar habis), lempar kembali ke halaman login
-        keycloak.login(); 
+        keycloak.login();
       }
+    } else {
+      console.warn('Tidak ada token Keycloak. Request dikirim tanpa Authorization header.');
     }
     return config;
   },

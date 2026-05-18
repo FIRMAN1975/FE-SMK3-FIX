@@ -4,8 +4,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Public pages (yang sudah ada)
 import BerandaPage from "./features/profil/pages/BerandaPage";
 import BeritaPage from "./features/profil/pages/BeritaPage";
-import PortofolioPage from "./features/profil/pages/PortofolioPage";
 import ProfilPage from "./features/profil/pages/ProfilPage";
+import PortofolioList from "./features/portofolio/pages/PortofolioList";
+import PortofolioForm from "./features/portofolio/pages/PortofolioForm";
+import PortofolioDetail from "./features/portofolio/pages/PortofolioDetail";
 import AdminPelanggaranPage from './features/admin/pages/AdminPelanggaranPage'; // pastikan ini sudah dibuat
 
 // Admin pages (baru)
@@ -22,7 +24,10 @@ function App() {
         <Route path="/" element={<BerandaPage />} />
         <Route path="/berita" element={<BeritaPage />} />
         <Route path="/profil" element={<ProfilPage />} />
-        <Route path="/portofolio" element={<PortofolioPage />} />
+        <Route path="/portofolio" element={<PortofolioList />} />
+        <Route path="/portofolio/tambah" element={<PortofolioForm />} />
+        <Route path="/portofolio/edit/:id" element={<PortofolioForm />} />
+        <Route path="/portofolio/:id" element={<PortofolioDetail />} />
 
         {/* ── Admin ── */}
         <Route path="/admin" element={<AdminDashboardPage />} />
