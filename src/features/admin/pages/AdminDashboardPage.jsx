@@ -14,6 +14,7 @@ const quickActions = [
   { to: "/admin/fasilitas", icon: "🏫", label: "Fasilitas"            },
   { to: "/admin/prestasi",  icon: "🏆", label: "Prestasi"             },
   { to: "/admin/mitra",     icon: "🤝", label: "Mitra Kerjasama"      },
+  { to: "/admin/pelanggaran",  icon: "⚠️",    label:"pelanggaran" } // jan lupa bikin nya
 ];
 
 export default function AdminDashboardPage() {
