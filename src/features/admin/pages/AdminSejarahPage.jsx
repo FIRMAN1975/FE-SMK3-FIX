@@ -1,6 +1,7 @@
 // src/features/admin/pages/AdminSejarahPage.jsx
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Swal from "sweetalert2";
 import AdminLayout from "../layouts/AdminLayout";
 import { AdminCard, AdminTable, AdminModal, ActionButtons } from "../components/AdminComponents";
 import { showConfirmDialog } from "../../../helpers/toolsHelper";
@@ -17,9 +18,9 @@ export function AdminSejarahPage() {
   const data     = useSelector((s) => s.sejarahIdentitas);
   const loading  = useSelector((s) => s.profilLoading);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem]   = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [modalOpen,   setModalOpen]   = useState(false);
+  const [editItem,    setEditItem]    = useState(null);
+  const [submitting,  setSubmitting]  = useState(false);
 
   const [tahun,     setTahun]     = useInput("");
   const [deskripsi, setDeskripsi] = useInput("");
@@ -41,10 +42,29 @@ export function AdminSejarahPage() {
   };
 
   const handleSubmit = () => {
+    // ── Validasi ──────────────────────────────────────────
+    if (!tahun.trim()) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tahun berdiri tidak boleh kosong" });
+      return;
+    }
+    if (!/^\d{4}$/.test(tahun.trim())) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tahun berdiri harus 4 digit angka (contoh: 1995)" });
+      return;
+    }
+    if (!deskripsi.trim()) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Deskripsi tidak boleh kosong" });
+      return;
+    }
+    if (deskripsi.trim().length < 10) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Deskripsi terlalu singkat, minimal 10 karakter" });
+      return;
+    }
+    // ─────────────────────────────────────────────────────
+
     setSubmitting(true);
     const cb = () => { setModalOpen(false); setSubmitting(false); };
-    if (editItem) dispatch(asyncPutSejarahIdentitas(editItem.id, tahun, deskripsi, cb));
-    else          dispatch(asyncPostSejarahIdentitas(tahun, deskripsi, cb));
+    if (editItem) dispatch(asyncPutSejarahIdentitas(editItem.id, tahun.trim(), deskripsi.trim(), cb));
+    else          dispatch(asyncPostSejarahIdentitas(tahun.trim(), deskripsi.trim(), cb));
     setTimeout(() => setSubmitting(false), 3000);
   };
 
@@ -79,12 +99,25 @@ export function AdminSejarahPage() {
         submitting={submitting}
       >
         <div className="smk-form-group">
-          <label>Tahun Berdiri</label>
-          <input className="smk-form-input" type="text" value={tahun} onChange={setTahun} placeholder="contoh: 1995" />
+          <label>Tahun Berdiri <span style={{ color: "red" }}>*</span></label>
+          <input
+            className="smk-form-input"
+            type="text"
+            value={tahun}
+            onChange={setTahun}
+            placeholder="contoh: 1995"
+            maxLength={4}
+          />
         </div>
         <div className="smk-form-group">
-          <label>Deskripsi</label>
-          <textarea className="smk-form-input" rows={5} value={deskripsi} onChange={setDeskripsi} placeholder="Ceritakan sejarah sekolah..." />
+          <label>Deskripsi <span style={{ color: "red" }}>*</span></label>
+          <textarea
+            className="smk-form-input"
+            rows={5}
+            value={deskripsi}
+            onChange={setDeskripsi}
+            placeholder="Ceritakan sejarah sekolah..."
+          />
         </div>
       </AdminModal>
     </AdminLayout>

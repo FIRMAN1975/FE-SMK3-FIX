@@ -1,6 +1,7 @@
 // src/features/admin/pages/AdminFasilitasPage.jsx
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Swal from "sweetalert2";
 import AdminLayout from "../layouts/AdminLayout";
 import { AdminCard, AdminTable, AdminModal, AdminThumb, ActionButtons, UploadArea, mediaUrl } from "../components/AdminComponents";
 import { showConfirmDialog } from "../../../helpers/toolsHelper";
@@ -15,13 +16,13 @@ export function AdminFasilitasPage() {
   const data     = useSelector((s) => s.fasilitas);
   const loading  = useSelector((s) => s.profilLoading);
 
-  const [modalOpen, setModalOpen]   = useState(false);
-  const [editItem, setEditItem]     = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [file, setFile]             = useState(null);
-  const [preview, setPreview]       = useState(null);
-  const [nama, setNama]             = useInput("");
-  const [deskripsi, setDeskripsi]   = useInput("");
+  const [modalOpen,   setModalOpen]   = useState(false);
+  const [editItem,    setEditItem]    = useState(null);
+  const [submitting,  setSubmitting]  = useState(false);
+  const [file,        setFile]        = useState(null);
+  const [preview,     setPreview]     = useState(null);
+  const [nama,        setNama]        = useInput("");
+  const [deskripsi,   setDeskripsi]   = useInput("");
 
   useEffect(() => { dispatch(asyncGetFasilitas()); }, [dispatch]);
 
@@ -48,10 +49,21 @@ export function AdminFasilitasPage() {
   };
 
   const handleSubmit = () => {
+    // ── Validasi ──────────────────────────────────────────
+    if (!nama.trim()) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama fasilitas tidak boleh kosong" });
+      return;
+    }
+    if (nama.trim().length < 3) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama fasilitas minimal 3 karakter" });
+      return;
+    }
+    // ─────────────────────────────────────────────────────
+
     setSubmitting(true);
     const cb = () => { setModalOpen(false); setSubmitting(false); };
-    if (editItem) dispatch(asyncPutFasilitas(editItem.id, nama, deskripsi, file, cb));
-    else          dispatch(asyncPostFasilitas(nama, deskripsi, file, cb));
+    if (editItem) dispatch(asyncPutFasilitas(editItem.id, nama.trim(), deskripsi.trim(), file, cb));
+    else          dispatch(asyncPostFasilitas(nama.trim(), deskripsi.trim(), file, cb));
     setTimeout(() => setSubmitting(false), 5000);
   };
 
@@ -79,12 +91,24 @@ export function AdminFasilitasPage() {
         title={editItem ? "Edit Fasilitas" : "Tambah Fasilitas"}
         onSubmit={handleSubmit} submitting={submitting}>
         <div className="smk-form-group">
-          <label>Nama Fasilitas</label>
-          <input className="smk-form-input" type="text" value={nama} onChange={setNama} placeholder="contoh: Lab Komputer & Jaringan" />
+          <label>Nama Fasilitas <span style={{ color: "red" }}>*</span></label>
+          <input
+            className="smk-form-input"
+            type="text"
+            value={nama}
+            onChange={setNama}
+            placeholder="contoh: Lab Komputer & Jaringan"
+          />
         </div>
         <div className="smk-form-group">
           <label>Deskripsi</label>
-          <textarea className="smk-form-input" rows={3} value={deskripsi} onChange={setDeskripsi} placeholder="Deskripsi fasilitas..." />
+          <textarea
+            className="smk-form-input"
+            rows={3}
+            value={deskripsi}
+            onChange={setDeskripsi}
+            placeholder="Deskripsi fasilitas..."
+          />
         </div>
         <UploadArea id="fasilitasFoto" onFile={handleFile} preview={preview} label="Pilih foto fasilitas (opsional)" />
       </AdminModal>
@@ -106,13 +130,13 @@ export function AdminPrestasiPage() {
   const data     = useSelector((s) => s.prestasi);
   const loading  = useSelector((s) => s.profilLoading);
 
-  const [modalOpen, setModalOpen]   = useState(false);
-  const [editItem, setEditItem]     = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [judul, setJudul]           = useInput("");
-  const [tahun, setTahun]           = useInput("");
-  const [keterangan, setKeterangan] = useInput("");
-  const [tingkat, setTingkat]       = useState("provinsi");
+  const [modalOpen,   setModalOpen]   = useState(false);
+  const [editItem,    setEditItem]    = useState(null);
+  const [submitting,  setSubmitting]  = useState(false);
+  const [judul,       setJudul]       = useInput("");
+  const [tahun,       setTahun]       = useInput("");
+  const [keterangan,  setKeterangan]  = useInput("");
+  const [tingkat,     setTingkat]     = useState("provinsi");
 
   useEffect(() => { dispatch(asyncGetPrestasi()); }, [dispatch]);
 
@@ -135,10 +159,29 @@ export function AdminPrestasiPage() {
   };
 
   const handleSubmit = () => {
+    // ── Validasi ──────────────────────────────────────────
+    if (!judul.trim()) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Judul prestasi tidak boleh kosong" });
+      return;
+    }
+    if (judul.trim().length < 3) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Judul prestasi minimal 3 karakter" });
+      return;
+    }
+    if (!tahun.trim()) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tahun tidak boleh kosong" });
+      return;
+    }
+    if (!/^\d{4}$/.test(tahun.trim())) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tahun harus 4 digit angka (contoh: 2024)" });
+      return;
+    }
+    // ─────────────────────────────────────────────────────
+
     setSubmitting(true);
     const cb = () => { setModalOpen(false); setSubmitting(false); };
-    if (editItem) dispatch(asyncPutPrestasi(editItem.id, judul, tingkat, tahun, keterangan, cb));
-    else          dispatch(asyncPostPrestasi(judul, tingkat, tahun, keterangan, cb));
+    if (editItem) dispatch(asyncPutPrestasi(editItem.id, judul.trim(), tingkat, tahun.trim(), keterangan.trim(), cb));
+    else          dispatch(asyncPostPrestasi(judul.trim(), tingkat, tahun.trim(), keterangan.trim(), cb));
     setTimeout(() => setSubmitting(false), 3000);
   };
 
@@ -167,8 +210,14 @@ export function AdminPrestasiPage() {
         title={editItem ? "Edit Prestasi" : "Tambah Prestasi"}
         onSubmit={handleSubmit} submitting={submitting}>
         <div className="smk-form-group">
-          <label>Judul Prestasi</label>
-          <input className="smk-form-input" type="text" value={judul} onChange={setJudul} placeholder="contoh: Juara I LKS Electronic Application" />
+          <label>Judul Prestasi <span style={{ color: "red" }}>*</span></label>
+          <input
+            className="smk-form-input"
+            type="text"
+            value={judul}
+            onChange={setJudul}
+            placeholder="contoh: Juara I LKS Electronic Application"
+          />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div className="smk-form-group">
@@ -181,13 +230,26 @@ export function AdminPrestasiPage() {
             </select>
           </div>
           <div className="smk-form-group">
-            <label>Tahun</label>
-            <input className="smk-form-input" type="text" value={tahun} onChange={setTahun} placeholder="contoh: 2024" />
+            <label>Tahun <span style={{ color: "red" }}>*</span></label>
+            <input
+              className="smk-form-input"
+              type="text"
+              value={tahun}
+              onChange={setTahun}
+              placeholder="contoh: 2024"
+              maxLength={4}
+            />
           </div>
         </div>
         <div className="smk-form-group">
           <label>Keterangan (opsional)</label>
-          <textarea className="smk-form-input" rows={3} value={keterangan} onChange={setKeterangan} placeholder="Keterangan tambahan..." />
+          <textarea
+            className="smk-form-input"
+            rows={3}
+            value={keterangan}
+            onChange={setKeterangan}
+            placeholder="Keterangan tambahan..."
+          />
         </div>
       </AdminModal>
     </AdminLayout>
@@ -207,13 +269,13 @@ export function AdminMitraPage() {
   const data     = useSelector((s) => s.mitraKerjasama);
   const loading  = useSelector((s) => s.profilLoading);
 
-  const [modalOpen, setModalOpen]   = useState(false);
-  const [editItem, setEditItem]     = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [file, setFile]             = useState(null);
-  const [preview, setPreview]       = useState(null);
-  const [nama, setNama]             = useInput("");
-  const [deskripsi, setDeskripsi]   = useInput("");
+  const [modalOpen,   setModalOpen]   = useState(false);
+  const [editItem,    setEditItem]    = useState(null);
+  const [submitting,  setSubmitting]  = useState(false);
+  const [file,        setFile]        = useState(null);
+  const [preview,     setPreview]     = useState(null);
+  const [nama,        setNama]        = useInput("");
+  const [deskripsi,   setDeskripsi]   = useInput("");
 
   useEffect(() => { dispatch(asyncGetMitraKerjasama()); }, [dispatch]);
 
@@ -240,10 +302,21 @@ export function AdminMitraPage() {
   };
 
   const handleSubmit = () => {
+    // ── Validasi ──────────────────────────────────────────
+    if (!nama.trim()) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama mitra tidak boleh kosong" });
+      return;
+    }
+    if (nama.trim().length < 3) {
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama mitra minimal 3 karakter" });
+      return;
+    }
+    // ─────────────────────────────────────────────────────
+
     setSubmitting(true);
     const cb = () => { setModalOpen(false); setSubmitting(false); };
-    if (editItem) dispatch(asyncPutMitraKerjasama(editItem.id, nama, deskripsi, file, cb));
-    else          dispatch(asyncPostMitraKerjasama(nama, deskripsi, file, cb));
+    if (editItem) dispatch(asyncPutMitraKerjasama(editItem.id, nama.trim(), deskripsi.trim(), file, cb));
+    else          dispatch(asyncPostMitraKerjasama(nama.trim(), deskripsi.trim(), file, cb));
     setTimeout(() => setSubmitting(false), 5000);
   };
 
@@ -271,12 +344,24 @@ export function AdminMitraPage() {
         title={editItem ? "Edit Mitra" : "Tambah Mitra"}
         onSubmit={handleSubmit} submitting={submitting}>
         <div className="smk-form-group">
-          <label>Nama Mitra</label>
-          <input className="smk-form-input" type="text" value={nama} onChange={setNama} placeholder="contoh: PT. PLN (Persero)" />
+          <label>Nama Mitra <span style={{ color: "red" }}>*</span></label>
+          <input
+            className="smk-form-input"
+            type="text"
+            value={nama}
+            onChange={setNama}
+            placeholder="contoh: PT. PLN (Persero)"
+          />
         </div>
         <div className="smk-form-group">
           <label>Deskripsi</label>
-          <textarea className="smk-form-input" rows={3} value={deskripsi} onChange={setDeskripsi} placeholder="Deskripsi singkat mitra..." />
+          <textarea
+            className="smk-form-input"
+            rows={3}
+            value={deskripsi}
+            onChange={setDeskripsi}
+            placeholder="Deskripsi singkat mitra..."
+          />
         </div>
         <UploadArea id="mitraLogo" onFile={handleFile} preview={preview} label="Pilih logo mitra (opsional)" />
       </AdminModal>
