@@ -9,6 +9,10 @@ import {
 } from "../../states/action";
 import { asyncGetPrestasi } from "../../../profil/states/action";
 
+// ── BASE URL ──────────────────────────────────────────────────────────────────
+// Ganti BASE_URL sesuai dengan URL backend kamu
+const BASE_URL = "http://localhost:6766";
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatTgl(str) {
   if (!str) return "";
@@ -28,12 +32,36 @@ function formatAgenda(str) {
   };
 }
 
-function imgUrl(item) {
-  if (!item) return null;
-  const path = item.imageUrl || item.gambar || null;
-  if (!path) return null;
-  if (path.startsWith("http")) return path;
-  return `http://localhost:6766/api/berita${path}`;
+/**
+ * Menghasilkan daftar kandidat URL gambar yang akan dicoba satu per satu.
+ * Urutan: dari yang paling mungkin benar → fallback lainnya.
+ */
+function buildImgCandidates(item) {
+  if (!item) return [];
+
+  // Kumpulkan semua field yang mungkin berisi path gambar
+  const raw = item.imageUrl || item.gambar || item.image || item.foto || item.photo || null;
+  if (!raw) return [];
+
+  // Sudah URL lengkap → langsung pakai, tidak perlu kandidat lain
+  if (raw.startsWith("http://") || raw.startsWith("https://")) {
+    return [raw];
+  }
+
+  const clean = raw.startsWith("/") ? raw : `/${raw}`;
+  // Ekstrak hanya nama file (bagian paling akhir)
+  const filename = clean.split("/").filter(Boolean).pop() || "";
+
+  // Kembalikan semua kemungkinan path yang lazim dipakai Express/backend Node
+  return [
+    `${BASE_URL}${clean}`,                          // path apa adanya
+    `${BASE_URL}/uploads/${filename}`,              // /uploads/namafile
+    `${BASE_URL}/api/berita/uploads/${filename}`,   // /api/berita/uploads/namafile
+    `${BASE_URL}/api/uploads/${filename}`,          // /api/uploads/namafile
+    `${BASE_URL}/berita/${filename}`,               // /berita/namafile
+    `${BASE_URL}/public/${filename}`,               // /public/namafile
+    `${BASE_URL}/images/${filename}`,               // /images/namafile
+  ].filter((u, i, arr) => arr.indexOf(u) === i);   // hapus duplikat
 }
 
 // ── Intersection Observer hook ────────────────────────────────────────────────
@@ -88,6 +116,79 @@ const TINGKAT_COLOR = {
   kabupaten:     "#8b5cf6",
 };
 
+// ── Komponen Gambar dengan Multi-Candidate Fallback ──────────────────────────
+/**
+ * Mencoba load gambar dari daftar kandidat URL satu per satu.
+ * Jika semua gagal → tampilkan placeholder.
+ */
+function BeritaImage({ item, alt, className, style }) {
+  const candidates = buildImgCandidates(item);
+  const [idx, setIdx]       = useState(0);
+  const [allFailed, setAllFailed] = useState(false);
+
+  // Reset setiap kali item berubah
+  useEffect(() => {
+    setIdx(0);
+    setAllFailed(false);
+  }, [item]);
+
+  const currentSrc = candidates[idx] ?? null;
+
+  // Log kandidat yang dicoba (bantu debug — bisa dihapus setelah gambar tampil)
+  useEffect(() => {
+    if (currentSrc) {
+      console.log(`[BeritaImage] Mencoba kandidat [${idx + 1}/${candidates.length}]:`, currentSrc);
+    }
+  }, [currentSrc]);
+
+  const handleError = () => {
+    console.warn(`[BeritaImage] Gagal [${idx + 1}/${candidates.length}]:`, currentSrc);
+    if (idx + 1 < candidates.length) {
+      setIdx(idx + 1); // coba kandidat berikutnya
+    } else {
+      console.error("[BeritaImage] Semua kandidat gagal. Data item:", item);
+      setAllFailed(true);
+    }
+  };
+
+  if (!currentSrc || allFailed) {
+    return (
+      <div
+        className={className}
+        style={{
+          ...style,
+          background: "linear-gradient(135deg, #e0e7ef 0%, #c7d2e6 100%)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#94a3b8",
+          fontSize: 13,
+          gap: 6,
+          minHeight: 160,
+        }}
+      >
+        <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="M21 15l-5-5L5 21" />
+        </svg>
+        <span>Gambar tidak tersedia</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={currentSrc}
+      alt={alt}
+      className={className}
+      style={style}
+      onError={handleError}
+    />
+  );
+}
+
 // ── Modal Detail ──────────────────────────────────────────────────────────────
 function DetailModal({ selected, onClose }) {
   if (!selected) return null;
@@ -134,11 +235,11 @@ function DetailModal({ selected, onClose }) {
           {/* ── Berita ── */}
           {type === "berita" && (
             <>
-              {imgUrl(data) && (
-                <img src={imgUrl(data)} alt={data.title}
-                  style={{ width: "100%", borderRadius: 10, marginBottom: 20, maxHeight: 320, objectFit: "cover" }}
-                  onError={(e) => { e.target.style.display = "none"; }} />
-              )}
+              <BeritaImage
+                item={data}
+                alt={data.title}
+                style={{ width: "100%", borderRadius: 10, marginBottom: 20, maxHeight: 320, objectFit: "cover", display: "block" }}
+              />
               <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}>
                 📅 {formatTgl(data.createdAt || data.created_at)}
               </div>
@@ -225,7 +326,7 @@ export default function BeritaPage() {
 
   const [activeFilter, setActiveFilter] = useState("Semua");
   const [search, setSearch]             = useState("");
-  const [selected, setSelected]         = useState(null); // ← modal state
+  const [selected, setSelected]         = useState(null);
 
   useEffect(() => {
     dispatch(asyncGetBerita());
@@ -257,7 +358,6 @@ export default function BeritaPage() {
     (p.keterangan || "").toLowerCase().includes(q)
   );
 
-  // Visibility per filter
   const showBerita     = activeFilter === "Semua" || activeFilter === "Berita";
   const showPengumuman = activeFilter === "Semua" || activeFilter === "Pengumuman";
   const showPrestasi   = activeFilter === "Semua" || activeFilter === "Prestasi";
@@ -319,17 +419,18 @@ export default function BeritaPage() {
               </Animate>
               <Animate animation="fade-left" delay={120}>
                 <div className="bp-utama-card">
-                  {imgUrl(beritaUtama) && (
-                    <div className="bp-utama-img-wrap">
-                      <img src={imgUrl(beritaUtama)} alt="berita utama" className="bp-utama-img"
-                        onError={(e) => { e.target.style.display = "none"; }} />
-                    </div>
-                  )}
+                  {/* ✅ Ganti <img> biasa dengan <BeritaImage> */}
+                  <div className="bp-utama-img-wrap">
+                    <BeritaImage
+                      item={beritaUtama}
+                      alt="berita utama"
+                      className="bp-utama-img"
+                    />
+                  </div>
                   <div className="bp-utama-body">
                     <span className="bp-utama-date">📅 {formatTgl(beritaUtama.createdAt)}</span>
                     <h3 className="bp-utama-judul">{beritaUtama.title}</h3>
                     <p className="bp-utama-ring">{beritaUtama.excerpt || beritaUtama.description || ""}</p>
-                    {/* ✅ onClick terhubung ke modal */}
                     <button
                       className="bp-btn-baca"
                       onClick={() => setSelected({ type: "berita", data: beritaUtama })}
@@ -397,19 +498,20 @@ export default function BeritaPage() {
                       style={{ cursor: "pointer" }}
                       onClick={() => setSelected({ type: "berita", data: b })}
                     >
-                      {imgUrl(b) && (
-                        <div className="bp-berita-img-wrap">
-                          <img src={imgUrl(b)} alt={b.title} className="bp-berita-img"
-                            onError={(e) => { e.target.style.display = "none"; }} />
-                        </div>
-                      )}
+                      {/* ✅ Ganti <img> biasa dengan <BeritaImage> */}
+                      <div className="bp-berita-img-wrap">
+                        <BeritaImage
+                          item={b}
+                          alt={b.title}
+                          className="bp-berita-img"
+                        />
+                      </div>
                       <div className="bp-berita-body">
                         <div className="bp-berita-meta">
                           <span className="bp-berita-date">📅 {formatTgl(b.createdAt)}</span>
                         </div>
                         <h3 className="bp-berita-judul">{b.title}</h3>
                         <p className="bp-berita-ring">{b.excerpt || b.description || ""}</p>
-                        {/* ✅ tombol baca selengkapnya berfungsi */}
                         <button
                           className="bp-btn-baca"
                           style={{ marginTop: 12, fontSize: 12 }}
@@ -451,7 +553,6 @@ export default function BeritaPage() {
                       </div>
                       <h3 className="bp-peng-judul">{p.title}</h3>
                       <p className="bp-peng-isi">{(p.content || p.description || "").slice(0, 100)}{(p.content || "").length > 100 ? "..." : ""}</p>
-                      {/* ✅ tombol lihat selengkapnya berfungsi */}
                       <button
                         className="bp-btn-lihat"
                         onClick={(e) => { e.stopPropagation(); setSelected({ type: "pengumuman", data: p }); }}
