@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // ── Public Pages ──────────────────────────────────────────────────────────────
 import BerandaPage    from "./features/profil/pages/BerandaPage";
-import BeritaPage     from "./features/profil/pages/BeritaPage";
+import BeritaPage from "./features/berita/components/pages/BeritaInformasi";
 import ProfilPage     from "./features/profil/pages/ProfilPage";
 import PortofolioPage from "./features/profil/pages/PortofolioPage";
 

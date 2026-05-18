@@ -6,7 +6,7 @@ import {
   AdminCard, AdminTable, AdminModal,
   AdminThumb, ActionButtons, UploadArea, mediaUrl,
 } from "../components/AdminComponents";
-import { showConfirmDialog } from "../../../helpers/toolsHelper";
+import { showConfirmDialog, showErrorDialog } from "../../../helpers/toolsHelper";
 import useInput from "../../../hooks/useInput";
 import {
   asyncGetBerita,    asyncPostBerita,    asyncPutBerita,    asyncDeleteBerita,
@@ -22,13 +22,13 @@ export function AdminBeritaPage() {
   const data     = useSelector((s) => s.berita   || []);
   const loading  = useSelector((s) => s.beritaLoading);
 
-  const [modalOpen, setModalOpen]   = useState(false);
-  const [editItem, setEditItem]     = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [file, setFile]             = useState(null);
-  const [preview, setPreview]       = useState(null);
-  const [title, setTitle]           = useInput("");
-  const [content, setContent]       = useInput("");
+  const [modalOpen, setModalOpen]     = useState(false);
+  const [editItem, setEditItem]       = useState(null);
+  const [submitting, setSubmitting]   = useState(false);
+  const [file, setFile]               = useState(null);
+  const [preview, setPreview]         = useState(null);
+  const [title, setTitle]             = useInput("");
+  const [content, setContent]         = useInput("");
   const [description, setDescription] = useInput("");
 
   useEffect(() => { dispatch(asyncGetBerita()); }, [dispatch]);
@@ -49,11 +49,12 @@ export function AdminBeritaPage() {
 
   const openEdit = (item) => {
     setEditItem(item);
-    setTitle({ target: { value: item.title } });
+    setTitle({ target: { value: item.title ?? "" } });
     setContent({ target: { value: item.content ?? "" } });
     setDescription({ target: { value: item.description ?? "" } });
     setFile(null);
-    setPreview(item.gambar ? mediaUrl(item.gambar) : null);
+    // ✅ Fix: BE mengembalikan field "imageUrl", bukan "gambar"
+    setPreview(item.imageUrl ? mediaUrl(item.imageUrl) : null);
     setModalOpen(true);
   };
 
@@ -62,11 +63,37 @@ export function AdminBeritaPage() {
     if (f) setPreview(URL.createObjectURL(f));
   };
 
+  const handleClose = () => {
+    // Bersihkan blob URL agar tidak memory leak
+    if (file && preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+    setModalOpen(false);
+    setFile(null);
+    setPreview(null);
+  };
+
   const handleSubmit = () => {
+    // ✅ Validasi FE — pesan error dalam Bahasa Indonesia
+    if (!title.trim() || title.trim().length < 5) {
+      showErrorDialog("Judul berita minimal 5 karakter");
+      return;
+    }
+    if (content.trim() && content.trim().length < 10) {
+      showErrorDialog("Isi berita minimal 10 karakter jika diisi");
+      return;
+    }
+
     setSubmitting(true);
-    const cb = () => { setModalOpen(false); setSubmitting(false); };
-    if (editItem) dispatch(asyncPutBerita(editItem.id, title, content, description, file, cb));
-    else          dispatch(asyncPostBerita(title, content, description, file, cb));
+    const cb = () => {
+      if (file && preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+      setModalOpen(false);
+      setSubmitting(false);
+      setFile(null);
+      setPreview(null);
+    };
+    if (editItem)
+      dispatch(asyncPutBerita(editItem.id, title, content, description, file, cb));
+    else
+      dispatch(asyncPostBerita(title, content, description, file, cb));
     setTimeout(() => setSubmitting(false), 5000);
   };
 
@@ -85,10 +112,16 @@ export function AdminBeritaPage() {
         >
           {data.map((item) => (
             <tr key={item.id}>
-              <td><AdminThumb src={mediaUrl(item.gambar)} fallback="📰" /></td>
+              {/* ✅ Fix: pakai item.imageUrl sesuai response dari BE */}
+              <td><AdminThumb src={mediaUrl(item.imageUrl)} fallback="📰" /></td>
               <td><strong>{item.title}</strong></td>
               <td className="smk-admin-td-truncate">{item.description?.slice(0, 80)}</td>
-              <td><ActionButtons onEdit={() => openEdit(item)} onDelete={() => handleDelete(item)} /></td>
+              <td>
+                <ActionButtons
+                  onEdit={() => openEdit(item)}
+                  onDelete={() => handleDelete(item)}
+                />
+              </td>
             </tr>
           ))}
         </AdminTable>
@@ -96,13 +129,13 @@ export function AdminBeritaPage() {
 
       <AdminModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleClose}
         title={editItem ? "Edit Berita" : "Tambah Berita"}
         onSubmit={handleSubmit}
         submitting={submitting}
       >
         <div className="smk-form-group">
-          <label>Judul Berita</label>
+          <label>Judul Berita <span style={{ color: "red" }}>*</span></label>
           <input
             className="smk-form-input" type="text"
             value={title} onChange={setTitle}
@@ -118,14 +151,19 @@ export function AdminBeritaPage() {
           />
         </div>
         <div className="smk-form-group">
-          <label>Isi Berita</label>
+          <label>Isi Berita <span style={{ color: "red" }}>*</span></label>
           <textarea
             className="smk-form-input" rows={5}
             value={content} onChange={setContent}
             placeholder="Tulis isi berita lengkap di sini..."
           />
         </div>
-        <UploadArea id="beritaGambar" onFile={handleFile} preview={preview} label="Pilih gambar berita (opsional)" />
+        <UploadArea
+          id="beritaGambar"
+          onFile={handleFile}
+          preview={preview}
+          label="Pilih gambar berita (opsional)"
+        />
       </AdminModal>
     </AdminLayout>
   );
@@ -158,8 +196,8 @@ export function AdminAgendaPage() {
 
   const openEdit = (item) => {
     setEditItem(item);
-    setTitle({ target: { value: item.title } });
-    setDate({ target: { value: item.date } });
+    setTitle({ target: { value: item.title ?? "" } });
+    setDate({ target: { value: (item.date || "").slice(0, 10) } });
     setLocation({ target: { value: item.location ?? "" } });
     setModalOpen(true);
   };
@@ -190,7 +228,12 @@ export function AdminAgendaPage() {
               <td><strong>{item.title}</strong></td>
               <td>{item.date}</td>
               <td>{item.location ?? "-"}</td>
-              <td><ActionButtons onEdit={() => openEdit(item)} onDelete={() => handleDelete(item)} /></td>
+              <td>
+                <ActionButtons
+                  onEdit={() => openEdit(item)}
+                  onDelete={() => handleDelete(item)}
+                />
+              </td>
             </tr>
           ))}
         </AdminTable>
@@ -204,7 +247,7 @@ export function AdminAgendaPage() {
         submitting={submitting}
       >
         <div className="smk-form-group">
-          <label>Judul Kegiatan</label>
+          <label>Judul Kegiatan <span style={{ color: "red" }}>*</span></label>
           <input
             className="smk-form-input" type="text"
             value={title} onChange={setTitle}
@@ -213,7 +256,7 @@ export function AdminAgendaPage() {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div className="smk-form-group">
-            <label>Tanggal</label>
+            <label>Tanggal <span style={{ color: "red" }}>*</span></label>
             <input
               className="smk-form-input" type="date"
               value={date} onChange={setDate}
@@ -258,7 +301,7 @@ export function AdminPengumumanPage() {
 
   const openEdit = (item) => {
     setEditItem(item);
-    setTitle({ target: { value: item.title } });
+    setTitle({ target: { value: item.title ?? "" } });
     setContent({ target: { value: item.content ?? "" } });
     setModalOpen(true);
   };
@@ -288,7 +331,12 @@ export function AdminPengumumanPage() {
             <tr key={item.id}>
               <td><strong>{item.title}</strong></td>
               <td className="smk-admin-td-truncate">{item.content?.slice(0, 80)}</td>
-              <td><ActionButtons onEdit={() => openEdit(item)} onDelete={() => handleDelete(item)} /></td>
+              <td>
+                <ActionButtons
+                  onEdit={() => openEdit(item)}
+                  onDelete={() => handleDelete(item)}
+                />
+              </td>
             </tr>
           ))}
         </AdminTable>
@@ -302,7 +350,7 @@ export function AdminPengumumanPage() {
         submitting={submitting}
       >
         <div className="smk-form-group">
-          <label>Judul Pengumuman</label>
+          <label>Judul Pengumuman <span style={{ color: "red" }}>*</span></label>
           <input
             className="smk-form-input" type="text"
             value={title} onChange={setTitle}

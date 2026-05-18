@@ -31,11 +31,12 @@ async function getBeritaById(id) {
 }
 async function postBerita(title, content, description, imageFile) {
   const fd = new FormData();
-  fd.append('title', title);
-  fd.append('content', content || '');
-  fd.append('description', description || '');
+  fd.append('title', title.trim());
   fd.append('slug', generateSlug(title));
   fd.append('author', 'Admin');
+  // ✅ Hanya append jika ada isinya — string kosong '' akan gagal validasi @Length(10) di BE
+  if (content && content.trim())         fd.append('content', content.trim());
+  if (description && description.trim()) fd.append('description', description.trim());
   if (imageFile) fd.append('gambar', imageFile);
   const res = await apiGateway.post(PREFIX_BERITA, fd, {
     headers: { 'Content-Type': 'multipart/form-data' },
