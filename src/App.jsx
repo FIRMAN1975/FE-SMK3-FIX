@@ -7,7 +7,6 @@ import ProfilPage from "./features/profil/pages/ProfilPage";
 import PortofolioList from "./features/portofolio/pages/PortofolioList";
 import PortofolioForm from "./features/portofolio/pages/PortofolioForm";
 import PortofolioDetail from "./features/portofolio/pages/PortofolioDetail";
-import AdminPelanggaranPage from './features/admin/pages/AdminPelanggaranPage'; // pastikan ini sudah dibuat
 // ── Public Pages ──────────────────────────────────────────────────────────────
 
 import BeritaPage from "./features/berita/components/pages/BeritaInformasi";
