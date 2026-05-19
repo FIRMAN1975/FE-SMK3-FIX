@@ -71,6 +71,27 @@ export default function Navbar() {
               <NavLink to="/portofolio" className="smk-dropdown-item">Kompetensi</NavLink>
             </div>
           </div>
+
+          {/*DATA*/}
+          <div className="smk-nav-dropdown">
+            <NavLink
+              to="#"
+              className="smk-nav-item"
+              onClick={() => toggleDropdown("data")}
+            >
+              Data <span className="smk-caret">▾</span>
+            </NavLink>
+
+            <div className="smk-dropdown-menu">
+              <NavLink to="/admin/data/siswa" className="smk-dropdown-item">
+                Data Siswa
+              </NavLink>
+
+              <NavLink to="/admin/data/guru" className="smk-dropdown-item">
+                Data Guru/Staf
+              </NavLink>
+            </div>
+          </div>
         </nav>
 
         {/* Login */}

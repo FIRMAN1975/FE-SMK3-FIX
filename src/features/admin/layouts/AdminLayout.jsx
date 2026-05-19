@@ -1,58 +1,33 @@
 // src/features/admin/layouts/AdminLayout.jsx
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { showConfirmDialog } from "../../../helpers/toolsHelper";
 
-const navItems = {
-  utama: [
-    { to: "/admin", icon: "🏠", label: "Dashboard", end: true },
-  ],
-  berita: [
-    { to: "/admin/berita",      icon: "📰", label: "Berita"      },
-    { to: "/admin/agenda",      icon: "📅", label: "Agenda"      },
-    { to: "/admin/pengumuman",  icon: "📢", label: "Pengumuman"  },
-  ],
-  profil: [
-    { to: "/admin/sejarah",     icon: "📜", label: "Sejarah & Identitas" },
-    { to: "/admin/visi-misi",   icon: "🌟", label: "Visi & Misi"         },
-    { to: "/admin/struktur",    icon: "🏢", label: "Struktur Organisasi"  },
-    { to: "/admin/program",     icon: "🎓", label: "Program Keahlian"     },
-    { to: "/admin/fasilitas",   icon: "🏫", label: "Fasilitas"            },
-    { to: "/admin/prestasi",    icon: "🏆", label: "Prestasi"             },
-    { to: "/admin/mitra",       icon: "🤝", label: "Mitra Kerjasama"      },
-  ],
-  lainnya: [
-    { to: "/admin/pelanggaran", icon: "⚠️", label: "Pelanggaran" },
-  ],
-};
+const navItems = [
+  { to: "/admin", icon: "🏠", label: "Dashboard", end: true },
+  { to: "/admin/sejarah", icon: "📜", label: "Sejarah & Identitas" },
+  { to: "/admin/visi-misi", icon: "🌟", label: "Visi & Misi" },
+  { to: "/admin/struktur", icon: "🏢", label: "Struktur Organisasi" },
+  { to: "/admin/program", icon: "🎓", label: "Program Keahlian" },
+  { to: "/admin/fasilitas", icon: "🏫", label: "Fasilitas" },
+  { to: "/admin/prestasi", icon: "🏆", label: "Prestasi" },
+  { to: "/admin/mitra", icon: "🤝", label: "Mitra Kerjasama" },
+];
 
-function NavGroup({ label, items, onClose }) {
-  return (
-    <>
-      <span className="smk-admin-nav-label">{label}</span>
-      {items.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          end={item.end}
-          className={({ isActive }) =>
-            `smk-admin-nav-item${isActive ? " active" : ""}`
-          }
-          onClick={onClose}
-        >
-          <span className="smk-admin-nav-icon">{item.icon}</span>
-          {item.label}
-        </NavLink>
-      ))}
-    </>
-  );
-}
+const manajemenItems = [
+  { to: "/admin/data/siswa", icon: "👨‍🎓", label: "Data Siswa" },
+  { to: "/admin/data/guru", icon: "👨‍🏫", label: "Data Guru" },
+];
 
 export default function AdminLayout({ children, title = "Admin Panel" }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const closeSidebar = () => setSidebarOpen(false);
+  // Dropdown otomatis terbuka kalau sedang di halaman manajemen data
+  const [manajemenOpen, setManajemenOpen] = useState(
+    location.pathname.startsWith("/admin/data")
+  );
 
   const handleLogout = async () => {
     const result = await showConfirmDialog("Apakah kamu yakin ingin keluar?");
@@ -66,7 +41,10 @@ export default function AdminLayout({ children, title = "Admin Panel" }) {
     <div className="smk-admin-layout">
       {/* OVERLAY mobile */}
       {sidebarOpen && (
-        <div className="smk-admin-overlay" onClick={closeSidebar} />
+        <div
+          className="smk-admin-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* SIDEBAR */}
@@ -80,17 +58,64 @@ export default function AdminLayout({ children, title = "Admin Panel" }) {
         </div>
 
         <nav className="smk-admin-nav">
-          {/* Dashboard */}
-          <NavGroup label="Utama"   items={navItems.utama}   onClose={closeSidebar} />
+          <span className="smk-admin-nav-label">Utama</span>
+          {navItems.slice(0, 1).map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `smk-admin-nav-item${isActive ? " active" : ""}`
+              }
+              onClick={() => setSidebarOpen(false)}
+            >
+              <span className="smk-admin-nav-icon">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
 
-          {/* Berita, Agenda, Pengumuman */}
-          <NavGroup label="Berita & Informasi" items={navItems.berita} onClose={closeSidebar} />
+          <span className="smk-admin-nav-label">Konten</span>
+          {navItems.slice(1).map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `smk-admin-nav-item${isActive ? " active" : ""}`
+              }
+              onClick={() => setSidebarOpen(false)}
+            >
+              <span className="smk-admin-nav-icon">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
 
-          {/* Profil Sekolah */}
-          <NavGroup label="Profil Sekolah" items={navItems.profil} onClose={closeSidebar} />
+          {/* DROPDOWN MANAJEMEN DATA */}
+          <span className="smk-admin-nav-label">Manajemen</span>
+          <button
+            className="smk-admin-nav-item smk-admin-nav-dropdown-toggle"
+            onClick={() => setManajemenOpen((prev) => !prev)}
+          >
+            <span className="smk-admin-nav-icon">🗂️</span>
+            <span style={{ color: "white" }}>Manajemen Data</span>
+          </button>
 
-          {/* Lainnya */}
-          <NavGroup label="Lainnya" items={navItems.lainnya} onClose={closeSidebar} />
+          {manajemenOpen && (
+            <div className="smk-admin-nav-dropdown">
+              {manajemenItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `smk-admin-nav-item smk-admin-nav-sub${isActive ? " active" : ""}`
+                  }
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <span className="smk-admin-nav-icon">{item.icon}</span>
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          )}
         </nav>
 
         <div className="smk-admin-sidebar-footer">
@@ -98,7 +123,10 @@ export default function AdminLayout({ children, title = "Admin Panel" }) {
             <span className="smk-admin-nav-icon">🌐</span>
             Lihat Website
           </NavLink>
-          <button className="smk-admin-nav-item smk-admin-logout" onClick={handleLogout}>
+          <button
+            className="smk-admin-nav-item smk-admin-logout"
+            onClick={handleLogout}
+          >
             <span className="smk-admin-nav-icon">🚪</span>
             Keluar
           </button>

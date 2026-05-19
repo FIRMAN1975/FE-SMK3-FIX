@@ -2,23 +2,17 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ProfilLayout from "../layouts/ProfilLayout";
 import foto from "../../../assets/images/foto.png";
-import { asyncLoadAllProfilData } from "../states/action";
-import apiGateway from "../../../config/axios";
+import {
+  asyncLoadAllProfilData,
+} from "../states/action";
 
-// Mengubah path relatif dari database menjadi URL lengkap melalui API Gateway
+// Ubah path file upload backend jadi URL lengkap
+// Backend simpan file di "uploads/fasilitas/xxx.jpg"
+// Agar bisa ditampilkan: http://localhost:3000/uploads/fasilitas/xxx.jpg
 function toImgUrl(path) {
   if (!path) return null;
   if (path.startsWith("http")) return path;
-
-  let cleanPath = path.replace(/\\/g, "/");
-
-  // Hapus port internal jika sempat masuk ke database
-  if (cleanPath.includes("localhost:")) {
-    cleanPath = cleanPath.replace(/^http:\/\/localhost:\d+\//, "");
-  }
-
-  const base = apiGateway.defaults.baseURL.replace("/api", "");
-  return `${base}/api/profile/uploads/${cleanPath.replace(/^\//, "")}`;
+  return `http://localhost:3000/${path.replace(/\\/g, "/")}`;
 }
 
 export default function ProfilPage() {
@@ -192,7 +186,7 @@ export default function ProfilPage() {
               fasilitas.map((item) => (
                 <div className="smk-facility-card" key={item.id}>
                   <img
-                    src={toImgUrl(item.foto)}
+                    src={toImgUrl(item.foto) || "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&q=80"}
                     alt={item.nama_fasilitas}
                     onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&q=80"; }}
                   />
@@ -200,6 +194,7 @@ export default function ProfilPage() {
                 </div>
               ))
             ) : (
+              // Fallback data statis jika API belum ada data
               [
                 { label: "Lab Kimia", img: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80" },
                 { label: "Lapangan Olahraga", img: "https://images.unsplash.com/photo-1560969184-10fe8719e047?w=400&q=80" },

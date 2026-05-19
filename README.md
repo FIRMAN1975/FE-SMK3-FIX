@@ -1,2 +1,0 @@
-# smkn3balige-feweb
-

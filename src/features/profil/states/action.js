@@ -22,9 +22,6 @@ export const setProgramKeahlian = (d) => ({ type: ActionType.SET_PROGRAM_KEAHLIA
 export const setMitraKerjasama = (d) => ({ type: ActionType.SET_MITRA_KERJASAMA, payload: d });
 export const setProfilLoading = (s) => ({ type: ActionType.SET_PROFIL_LOADING, payload: s });
 
-// Helper internal untuk membedah pesan error dari Axios/NestJS
-const extractError = (e) => e.response?.data?.message || e.message || "Terjadi kesalahan";
-
 // ── GET ──────────────────────────────────────────────────────
 export function asyncGetSejarahIdentitas() {
   return async (dispatch) => {
@@ -90,132 +87,132 @@ export function asyncLoadAllProfilData() {
 export function asyncPostSejarahIdentitas(tahun_berdiri, deskripsi, cb) {
   return async (dispatch) => {
     try { await profilApi.postSejarahIdentitas(tahun_berdiri, deskripsi); showSuccessDialog("Data berhasil ditambahkan"); dispatch(asyncGetSejarahIdentitas()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncPutSejarahIdentitas(id, tahun_berdiri, deskripsi, cb) {
   return async (dispatch) => {
     try { await profilApi.putSejarahIdentitas(id, tahun_berdiri, deskripsi); showSuccessDialog("Data berhasil diperbarui"); dispatch(asyncGetSejarahIdentitas()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncDeleteSejarahIdentitas(id, cb) {
   return async (dispatch) => {
     try { await profilApi.deleteSejarahIdentitas(id); showSuccessDialog("Data berhasil dihapus"); dispatch(asyncGetSejarahIdentitas()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 
 export function asyncPostVisiMisi(tipe, deskripsi, cb) {
   return async (dispatch) => {
     try { await profilApi.postVisiMisi(tipe, deskripsi); showSuccessDialog("Berhasil ditambahkan"); dispatch(asyncGetVisiMisi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncPutVisiMisi(id, tipe, deskripsi, cb) {
   return async (dispatch) => {
     try { await profilApi.putVisiMisi(id, tipe, deskripsi); showSuccessDialog("Berhasil diperbarui"); dispatch(asyncGetVisiMisi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncDeleteVisiMisi(id, cb) {
   return async (dispatch) => {
     try { await profilApi.deleteVisiMisi(id); showSuccessDialog("Berhasil dihapus"); dispatch(asyncGetVisiMisi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 
 export function asyncPostStrukturOrganisasi(file, cb) {
   return async (dispatch) => {
     try { await profilApi.postStrukturOrganisasi(file); showSuccessDialog("Gambar berhasil diupload"); dispatch(asyncGetStrukturOrganisasi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncPutStrukturOrganisasi(id, file, cb) {
   return async (dispatch) => {
     try { await profilApi.putStrukturOrganisasi(id, file); showSuccessDialog("Gambar berhasil diperbarui"); dispatch(asyncGetStrukturOrganisasi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncDeleteStrukturOrganisasi(id, cb) {
   return async (dispatch) => {
     try { await profilApi.deleteStrukturOrganisasi(id); showSuccessDialog("Berhasil dihapus"); dispatch(asyncGetStrukturOrganisasi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 
 export function asyncPostFasilitas(nama, deskripsi, foto, cb) {
   return async (dispatch) => {
     try { await profilApi.postFasilitas(nama, deskripsi, foto); showSuccessDialog("Fasilitas berhasil ditambahkan"); dispatch(asyncGetFasilitas()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncPutFasilitas(id, nama, deskripsi, foto, cb) {
   return async (dispatch) => {
     try { await profilApi.putFasilitas(id, nama, deskripsi, foto); showSuccessDialog("Fasilitas berhasil diperbarui"); dispatch(asyncGetFasilitas()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncDeleteFasilitas(id, cb) {
   return async (dispatch) => {
     try { await profilApi.deleteFasilitas(id); showSuccessDialog("Fasilitas berhasil dihapus"); dispatch(asyncGetFasilitas()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 
 export function asyncPostPrestasi(judul, tingkat, tahun, keterangan, cb) {
   return async (dispatch) => {
     try { await profilApi.postPrestasi(judul, tingkat, tahun, keterangan); showSuccessDialog("Prestasi berhasil ditambahkan"); dispatch(asyncGetPrestasi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncPutPrestasi(id, judul, tingkat, tahun, keterangan, cb) {
   return async (dispatch) => {
     try { await profilApi.putPrestasi(id, judul, tingkat, tahun, keterangan); showSuccessDialog("Prestasi berhasil diperbarui"); dispatch(asyncGetPrestasi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncDeletePrestasi(id, cb) {
   return async (dispatch) => {
     try { await profilApi.deletePrestasi(id); showSuccessDialog("Prestasi berhasil dihapus"); dispatch(asyncGetPrestasi()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 
 export function asyncPostProgramKeahlian(nama, deskripsi, icon, cb) {
   return async (dispatch) => {
     try { await profilApi.postProgramKeahlian(nama, deskripsi, icon); showSuccessDialog("Program keahlian berhasil ditambahkan"); dispatch(asyncGetProgramKeahlian()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncPutProgramKeahlian(id, nama, deskripsi, icon, cb) {
   return async (dispatch) => {
     try { await profilApi.putProgramKeahlian(id, nama, deskripsi, icon); showSuccessDialog("Program keahlian berhasil diperbarui"); dispatch(asyncGetProgramKeahlian()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncDeleteProgramKeahlian(id, cb) {
   return async (dispatch) => {
     try { await profilApi.deleteProgramKeahlian(id); showSuccessDialog("Program keahlian berhasil dihapus"); dispatch(asyncGetProgramKeahlian()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 
 export function asyncPostMitraKerjasama(nama, deskripsi, logo, cb) {
   return async (dispatch) => {
     try { await profilApi.postMitraKerjasama(nama, deskripsi, logo); showSuccessDialog("Mitra berhasil ditambahkan"); dispatch(asyncGetMitraKerjasama()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncPutMitraKerjasama(id, nama, deskripsi, logo, cb) {
   return async (dispatch) => {
     try { await profilApi.putMitraKerjasama(id, nama, deskripsi, logo); showSuccessDialog("Mitra berhasil diperbarui"); dispatch(asyncGetMitraKerjasama()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }
 export function asyncDeleteMitraKerjasama(id, cb) {
   return async (dispatch) => {
     try { await profilApi.deleteMitraKerjasama(id); showSuccessDialog("Mitra berhasil dihapus"); dispatch(asyncGetMitraKerjasama()); if (cb) cb(); }
-    catch (e) { showErrorDialog(extractError(e)); }
+    catch (e) { showErrorDialog(e.message); }
   };
 }

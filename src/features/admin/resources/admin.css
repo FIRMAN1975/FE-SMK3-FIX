@@ -112,6 +112,33 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.smk-admin-nav-dropdown-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: inherit;
+  color: inherit;
+  padding: inherit;
+  font-family: inherit;
+}
+
+.smk-admin-nav-dropdown {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  margin: 2px 0 4px 0;
+  overflow: hidden;
+}
+
+.smk-admin-nav-sub {
+  padding-left: 32px !important;
+  font-size: 0.92em;
+}
+
 .smk-admin-nav-item.active {
   background: var(--blue);
   color: #fff;
