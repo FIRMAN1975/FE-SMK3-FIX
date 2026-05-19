@@ -12,7 +12,6 @@ import {
   mitraKerjasamaReducer,
   profilLoadingReducer,
 } from "./features/profil/states/reducer";
-import { portofolioReducer } from "./features/portofolio/states/reducer";
 
 // ── Berita reducers ───────────────────────────────────────────────────────────
 import {
@@ -28,12 +27,11 @@ const store = configureStore({
     sejarahIdentitas:   sejarahIdentitasReducer,
     visiMisi:           visiMisiReducer,
     strukturOrganisasi: strukturOrganisasiReducer,
-    fasilitas: fasilitasReducer,
-    prestasi: prestasiReducer,
-    programKeahlian: programKeahlianReducer,
-    mitraKerjasama: mitraKerjasamaReducer,
-    profilLoading: profilLoadingReducer,
-    portofolio: portofolioReducer,
+    fasilitas:          fasilitasReducer,
+    prestasi:           prestasiReducer,
+    programKeahlian:    programKeahlianReducer,
+    mitraKerjasama:     mitraKerjasamaReducer,
+    profilLoading:      profilLoadingReducer,
 
     // Berita
     berita:             beritaReducer,

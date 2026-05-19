@@ -6,8 +6,16 @@ import apiGateway from '../../../config/axios';
 export function mediaUrl(filePath) {
   if (!filePath) return null;
   if (filePath.startsWith("http")) return filePath;
+  
   const normalized = filePath.replace(/\\/g, "/");
   const base = apiGateway.defaults.baseURL.replace("/api", "");
+  
+  // ✅ If path starts with /uploads or contains /uploads → use direct route
+  if (normalized.includes("/uploads")) {
+    return `${base}${normalized.startsWith("/") ? "" : "/"}${normalized}`;
+  }
+  
+  // Otherwise use /api/profile for other media (profile, fasilitas, mitra, etc)
   return `${base}/api/profile/${normalized.replace(/^\//, "")}`;
 }
 
